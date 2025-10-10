@@ -71,9 +71,21 @@ elif [[ "$OS" == "MINGW"* ]] || [[ "$OS" == "MSYS"* ]] || [[ "$OS" == "CYGWIN"* 
         exit 1
     fi
 
+    # Handle Scoop-installed yt-dlp (shim fix)
+    if [ -n "$YT_DLP_PATH" ] && grep -qi "scoop" <<< "$YT_DLP_PATH"; then
+        echo "Detected Scoop shim for yt-dlp, using real executable instead..."
+        YT_DLP_PATH="$(find "$HOME/scoop/apps/yt-dlp" -type f -name 'yt-dlp.exe' | head -n 1)"
+    fi
+    # Handle Scoop-installed ffmpeg (shim fix)
+    if [ -n "$FFMPEG_PATH" ] && grep -qi "scoop" <<< "$FFMPEG_PATH"; then
+        echo "Detected Scoop shim for ffmpeg, using real executable instead..."
+        FFMPEG_PATH="$(find "$HOME/scoop/apps/ffmpeg" -type f -name 'ffmpeg.exe' | head -n 1)"
+    fi
+
     "$WINDEPLOYQT" "$RELEASE_DIR/$(basename "$EXECUTABLE_PATH")"
     echo "Qt dependencies deployed."
 fi
+
 echo "Copying yt-dlp and ffmpeg to ./release/deps/"
 cp "$YT_DLP_PATH" "$DEPS_DIR"
 cp "$FFMPEG_PATH" "$DEPS_DIR"
