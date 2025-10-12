@@ -16,13 +16,13 @@ set(CMAKE_AUTOUIC ON)
 
 if(WIN32)
     add_executable(yt-dlp-GUI
-        src/main_gui.cpp
+        src/main_win.cpp
         src/main_window.cpp
         src/main_window.hpp
     )
 else()
     add_executable(yt-dlp-GUI
-        src/main.cpp
+        src/main_linux.cpp
         src/main_window.cpp
         src/main_window.hpp
     )
