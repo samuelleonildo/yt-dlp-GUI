@@ -15,6 +15,9 @@
 #include <QString>
 #include <QProcess>
 #include <QComboBox>
+#include <QListView>
+#include <QFontDatabase>
+
 
 #ifdef Q_OS_WIN
 #include <windows.h>
@@ -35,41 +38,156 @@ bool MainWindow::isPlaylistUrl(const QString &url)
     return url.contains("list=") || url.contains("playlist?");
 }
 
+void MainWindow::applyInterFont(void)
+{
+    // loads font
+    int fontId = QFontDatabase::addApplicationFont(":/fonts/Inter_Light.ttf");
+    QString family = QFontDatabase::applicationFontFamilies(fontId).at(0);
+
+    // defines it for the entire application
+    QFont interLight(family, 16);
+    this->setFont(interLight);
+}
+
+void MainWindow::switchTheme(Theme theme)
+{
+    current_theme = theme;
+    qApp->setStyleSheet(loadStyleSheet(theme));
+
+    if (current_theme == Theme::Dark)
+    {
+        dark_mode->setIcon(QIcon(":/icons/moon_dark.png"));
+        light_mode->setIcon(QIcon(":/icons/sun_dark.png"));
+    }
+    else
+    {
+        dark_mode->setIcon(QIcon(":/icons/moon_light.png"));
+        light_mode->setIcon(QIcon(":/icons/sun_light.png"));
+    }
+}
+
 // ---------- MainWindow ----------
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
 {
+    setWindowTitle("yt-dlp-GUI");
+    resize(1280, 720);
+    setFixedSize(size());
+
+    this->setObjectName("MainWindow");
+    this->applyInterFont();
+
     QWidget *central = new QWidget(this);
     setCentralWidget(central);
+    central->setObjectName("Central");
 
-    // --- mode selector ---
-    QLabel *lblMode = new QLabel("Mode:");
+    // --- URL ---
+    QLabel *lblUrl = new QLabel("URL");
+    lblUrl->setObjectName("Label");
+    leUrl = new QLineEdit;
+    leUrl->setPlaceholderText("https://...");
+    leUrl->setFixedWidth(750);
+    leUrl->setAlignment(Qt::AlignLeft);
+
+    // --- dark/light mode ---
+    QHBoxLayout *colors_mode_layout = new QHBoxLayout;
+    colors_mode_layout->setAlignment(Qt::AlignRight);
+    colors_mode_layout->setSpacing(10);
+    QButtonGroup *colors_group = new QButtonGroup(this);
+    colors_group->setExclusive(true);
+
+    dark_mode = new QPushButton;
+    dark_mode->setCheckable(true);
+    dark_mode->setChecked(true);
+    dark_mode->setFixedSize(35, 35);
+    dark_mode->setObjectName("ColorModeButton");
+    dark_mode->setIcon(QIcon(":/icons/moon_dark.png"));
+    dark_mode->setIconSize(QSize(18, 18));
+    colors_group->addButton(dark_mode);
+    colors_mode_layout->addWidget(dark_mode);
+
+    light_mode = new QPushButton;
+    light_mode->setCheckable(true);
+    light_mode->setChecked(false);
+    light_mode->setFixedSize(35, 35);
+    light_mode->setObjectName("ColorModeButton");
+    light_mode->setIcon(QIcon(":/icons/sun_dark.png"));
+    light_mode->setIconSize(QSize(18, 18));
+    colors_group->addButton(light_mode);
+    colors_mode_layout->addWidget(light_mode);
+
+    connect(dark_mode, &QPushButton::clicked, this, [=]() {
+        dark_mode->setChecked(true);
+        light_mode->setChecked(false);
+        switchTheme(Theme::Dark);
+    });
+    connect(light_mode, &QPushButton::clicked, this, [=]() {
+        light_mode->setChecked(true);
+        dark_mode->setChecked(false);
+        switchTheme(Theme::Light);
+    });
+
+    QHBoxLayout* leUrl_and_color_mode = new QHBoxLayout;
+    leUrl_and_color_mode->addWidget(leUrl);
+    leUrl_and_color_mode->addStretch();
+    leUrl_and_color_mode->addLayout(colors_mode_layout);
+
+    QVBoxLayout* url_layout = new QVBoxLayout;
+    url_layout->addWidget(lblUrl);
+    url_layout->addLayout(leUrl_and_color_mode);
+    url_layout->setSpacing(10);
+    url_layout->setAlignment(Qt::AlignLeft);
+
+
+    // --- mode and format selector ---
+    QLabel *lblMode = new QLabel("Download");
+    lblMode->setObjectName("Label");
     cbMode = new QComboBox;
     cbMode->addItems({"video", "audio"});
-    cbMode->setObjectName("cbMode");
+    cbMode->setFixedSize(240, 35);
+    cbMode->setView(new QListView);
 
-
-    QHBoxLayout *modeLayout = new QHBoxLayout;
-    modeLayout->addWidget(lblMode);
-    modeLayout->addWidget(cbMode);
-    modeLayout->addStretch();
-
-    // --- format selector ---
-    QLabel *lblFormat = new QLabel("Format:");
     cbFormat = new QComboBox;
     cbFormat->addItems({"mp4", "mkv"}); 
-    cbFormat->setObjectName("cbFormat");
+    cbFormat->setFixedSize(195, 35);
+    cbFormat->setView(new QListView);
 
-    QHBoxLayout *formatLayout = new QHBoxLayout;
-    formatLayout->addWidget(lblFormat);
-    formatLayout->addWidget(cbFormat);
-    formatLayout->addStretch();
+    QHBoxLayout *mode_and_format_layout = new QHBoxLayout;
+    mode_and_format_layout->addWidget(cbMode);
+    mode_and_format_layout->addWidget(cbFormat);
+    mode_and_format_layout->setSpacing(10);
+
+    QVBoxLayout *main_mode_layout = new QVBoxLayout;
+    main_mode_layout->addWidget(lblMode);
+    main_mode_layout->addLayout(mode_and_format_layout);
+    main_mode_layout->setSpacing(10);
+
+    // --- custom name ---
+    QLabel *lblCustom = new QLabel("Custom name (optional):");
+    lblCustom->setObjectName("Label");
+    leCustom = new QLineEdit;
+    leCustom->setPlaceholderText("no especial characters nor extension");
+    leCustom->setFixedSize(445, 35);
+
+    QVBoxLayout *customNameLayout = new QVBoxLayout;
+    customNameLayout->addWidget(lblCustom);
+    customNameLayout->addWidget(leCustom);
+    customNameLayout->setSpacing(10);
+
+    // --- download and custom name ---
+    QHBoxLayout *download_and_custom_name_layout = new QHBoxLayout;
+    download_and_custom_name_layout->addLayout(main_mode_layout);
+    download_and_custom_name_layout->addLayout(customNameLayout);
+    download_and_custom_name_layout->setSpacing(50);
+    download_and_custom_name_layout->setAlignment(Qt::AlignLeft);
+
 
     // --- video quality ---
-    QLabel *lblVideoQuality = new QLabel("Video Quality:");
-
     QStringList videoQualities = {"240p", "360p", "480p", "720p", "1080p", "4K", "Best"};
     QHBoxLayout *videoQualityLayout = new QHBoxLayout;
+    videoQualityLayout->setAlignment(Qt::AlignLeft);
+    videoQualityLayout->setSpacing(30);
+    videoQualityLayout->setContentsMargins(0, 10, 0, 10);
     QButtonGroup *videoGroup = new QButtonGroup(this);
     videoGroup->setExclusive(true);
 
@@ -77,10 +195,8 @@ MainWindow::MainWindow(QWidget *parent)
     {
         QPushButton *btn = new QPushButton(q);
         btn->setCheckable(true);
-        btn->setStyleSheet(
-            "QPushButton { padding: 6px 10px; border: 1px solid gray; border-radius: 6px; }"
-            "QPushButton:checked { background-color: #0078D7; color: white; font-weight: bold; }"
-        );
+        btn->setObjectName("QualityButton");
+        btn->setFixedSize(130, 40);
         videoGroup->addButton(btn);
         videoQualityLayout->addWidget(btn);
     }
@@ -88,11 +204,13 @@ MainWindow::MainWindow(QWidget *parent)
     // best as default quality
     videoGroup->buttons().last()->setChecked(true);
 
-    // --- audio quality ---
-    QLabel *lblAudioQuality = new QLabel("Audio Quality:");
 
+    // --- audio quality ---
     QStringList audioQualities = {"128k", "192k", "256k", "320k", "Best"};
     QHBoxLayout *audioQualityLayout = new QHBoxLayout;
+    audioQualityLayout->setAlignment(Qt::AlignLeft);
+    audioQualityLayout->setSpacing(30);
+    audioQualityLayout->setContentsMargins(0, 10, 0, 10);
     QButtonGroup *audioGroup = new QButtonGroup(this);
     audioGroup->setExclusive(true);
 
@@ -100,10 +218,8 @@ MainWindow::MainWindow(QWidget *parent)
     {
         QPushButton *btn = new QPushButton(q);
         btn->setCheckable(true);
-        btn->setStyleSheet(
-            "QPushButton { padding: 6px 10px; border: 1px solid gray; border-radius: 6px; }"
-            "QPushButton:checked { background-color: #2E8B57; color: white; font-weight: bold; }"
-        );
+        btn->setObjectName("QualityButton");
+        btn->setFixedSize(130, 40);
         audioGroup->addButton(btn);
         audioQualityLayout->addWidget(btn);
     }
@@ -114,94 +230,107 @@ MainWindow::MainWindow(QWidget *parent)
     this->videoQualityGroup = videoGroup;
     this->audioQualityGroup = audioGroup;
 
-    // --- URL ---
-    QLabel *lblUrl = new QLabel("URL:");
-    leUrl = new QLineEdit;
-    leUrl->setPlaceholderText("https://...");
 
     // --- path ---
-    QLabel *lblPath = new QLabel("Save to:");
+    QLabel *lblPath = new QLabel("Save to");
+    lblPath->setObjectName("Label");
     lePath = new QLineEdit;
     lePath->setPlaceholderText("/home/user/Videos");
-    QPushButton *btnBrowse = new QPushButton("Choose...");
+    lePath->setFixedSize(345, 35);
+    QPushButton *btnBrowse = new QPushButton("Choose");
+    btnBrowse->setObjectName("ChooseButton");
     connect(btnBrowse, &QPushButton::clicked, this, &MainWindow::chooseDir);
 
     QHBoxLayout *pathLayout = new QHBoxLayout;
     pathLayout->addWidget(lblPath);
     pathLayout->addWidget(lePath);
     pathLayout->addWidget(btnBrowse);
+    pathLayout->setSpacing(10);
+    pathLayout->setAlignment(Qt::AlignLeft);
 
-    // --- custom name ---
-    QLabel *lblCustom = new QLabel("Custom name (optional):");
-    leCustom = new QLineEdit;
-    leCustom->setPlaceholderText("without extension and special characters");
 
     // --- main buttons ---
-    QPushButton *btnDownload = new QPushButton("Download");
     QPushButton *btnHelp = new QPushButton("Help");
-    QPushButton *btnVersion = new QPushButton("Version");
+    btnHelp->setObjectName("HelpButton");
+    btnHelp->setFixedSize(90, 35);
+    QPushButton *btnCancel = new QPushButton("Cancel");
+    btnCancel->setObjectName("CancelButton");
+    btnCancel->setFixedSize(90, 35);
+    QPushButton *btnDownload = new QPushButton("Download");
+    btnDownload->setObjectName("DownloadButton");
+    btnDownload->setFixedSize(110, 35);
 
-    connect(btnDownload, &QPushButton::clicked, this, &MainWindow::startDownload);
     connect(btnHelp, &QPushButton::clicked, this, &MainWindow::showHelp);
-    connect(btnVersion, &QPushButton::clicked, this, &MainWindow::showVersion);
+    connect(btnCancel, &QPushButton::clicked, this, &MainWindow::cancelDownload);
+    connect(btnDownload, &QPushButton::clicked, this, &MainWindow::startDownload);
 
     QHBoxLayout *buttonsLayout = new QHBoxLayout;
-    buttonsLayout->addWidget(btnDownload);
     buttonsLayout->addWidget(btnHelp);
-    buttonsLayout->addWidget(btnVersion);
-    buttonsLayout->addStretch();
+    buttonsLayout->addWidget(btnCancel);
+    buttonsLayout->addWidget(btnDownload);
+    buttonsLayout->setAlignment(Qt::AlignRight);
+
+    QHBoxLayout* path_and_buttons_layout = new QHBoxLayout;
+    path_and_buttons_layout->addLayout(pathLayout);
+    path_and_buttons_layout->addStretch();
+    path_and_buttons_layout->addLayout(buttonsLayout);
+
 
     // --- log ---
     log = new QTextEdit;
     log->setReadOnly(true);
     log->setMinimumHeight(200);
+    QLabel* console_label = new QLabel("Console output");
+    console_label->setObjectName("Label");
+
+    QVBoxLayout* console_output_layout = new QVBoxLayout;
+    console_output_layout->addWidget(console_label);
+    console_output_layout->addWidget(log);
 
     // --- main layout ---
     QVBoxLayout *mainLayout = new QVBoxLayout;
-    mainLayout->addLayout(modeLayout);
-    mainLayout->addLayout(formatLayout);
+    mainLayout->setObjectName("MainLayout");
+    mainLayout->addLayout(url_layout);
+    mainLayout->addLayout(download_and_custom_name_layout);
 
-    mainLayout->addWidget(lblVideoQuality);
-    mainLayout->addLayout(videoQualityLayout);
-    mainLayout->addWidget(lblAudioQuality);
-    mainLayout->addLayout(audioQualityLayout);
+    QWidget *videoQualityWidget = new QWidget;
+    videoQualityWidget->setLayout(videoQualityLayout);
 
-    mainLayout->addWidget(lblUrl);
-    mainLayout->addWidget(leUrl);
-    mainLayout->addLayout(pathLayout);
-    mainLayout->addWidget(lblCustom);
-    mainLayout->addWidget(leCustom);
-    mainLayout->addLayout(buttonsLayout);
-    mainLayout->addWidget(new QLabel("Console output:"));
-    mainLayout->addWidget(log);
+    QWidget *audioQualityWidget = new QWidget;
+    audioQualityWidget->setLayout(audioQualityLayout);
 
-    central->setLayout(mainLayout);
+    mainLayout->addWidget(videoQualityWidget);
+    mainLayout->addWidget(audioQualityWidget);
 
-    setWindowTitle("yt-dlp helper (Qt)");
-    resize(1280, 720);
-    setFixedSize(size());
+    mainLayout->addLayout(path_and_buttons_layout);
+    mainLayout->addLayout(console_output_layout);
+    // qss
+    mainLayout->setSpacing(15);
+
+    QFrame *wrapper = new QFrame;
+    wrapper->setObjectName("Wrapper");
+    wrapper->setLayout(mainLayout);
+
+    QVBoxLayout *centralLayout = new QVBoxLayout;
+    centralLayout->addWidget(wrapper);
+    central->setLayout(centralLayout);
+
 
     // quality swap
-    lblAudioQuality->setVisible(false);
-    for (auto *btn : audioGroup->buttons())
-        btn->setVisible(false);
+    audioQualityWidget->setVisible(false);
 
     cbFormat->clear();
     cbFormat->addItems({"mp4", "mkv"});
 
-    connect(cbMode, &QComboBox::currentTextChanged, this, [=](const QString &mode) {
-        QString initialMode = cbMode->currentText();
+    connect(cbMode, &QComboBox::currentTextChanged, this, [=](void) {
+        QString mode = cbMode->currentText();
+        bool isAudio = (mode == "audio");
 
-        lblAudioQuality->setVisible(initialMode == "audio");
-        for (auto *btn : audioGroup->buttons())
-            btn->setVisible(initialMode == "audio");
-
-        lblVideoQuality->setVisible(initialMode == "video");
-        for (auto *btn : videoGroup->buttons())
-            btn->setVisible(initialMode == "video");
+        videoQualityWidget->setVisible(!isAudio);
+        audioQualityWidget->setVisible(isAudio);
 
         cbFormat->clear();
-        if (initialMode == "audio")
+        if (mode == "audio")
             cbFormat->addItems({"mp3", "opus"});
         else
             cbFormat->addItems({"mp4", "mkv"});
@@ -239,9 +368,29 @@ void MainWindow::showHelp()
         "Usage:\n  mode: video or audio\n  URL: must start with http:// or https://\n\nThis GUI is a helper wrapper around yt-dlp and ffmpeg.\nMake sure yt-dlp and ffmpeg are in release/deps.");
 }
 
-void MainWindow::showVersion()
+void MainWindow::cancelDownload()
 {
-    QMessageBox::information(this, "Version", "yt-dlp helper Qt v1.0");
+    if (!btnIsRunning)
+    {
+        QMessageBox::information(this, "Cancel", "No download is currently running.");
+        return;
+    }
+
+    log->append("\nCancelling current download...");
+
+    proc.terminate();
+
+    if (!proc.waitForFinished(3000))
+    {
+        log->append("Forcing process to stop...");
+        proc.kill();
+        proc.waitForFinished();
+    }
+
+    btnIsRunning = false;
+
+    log->append("Download canceled by user.");
+    QMessageBox::information(this, "Canceled", "Download canceled.\nYou may want to delete incomplete files from the destination folder.");
 }
 
 
