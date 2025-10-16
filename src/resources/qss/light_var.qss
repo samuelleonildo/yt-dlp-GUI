@@ -1,0 +1,9 @@
+@define-color bg_window #F5F5F5;
+@define-color green #27AE60;
+@define-color red #C0392B;
+@define-color blue #3498DB;
+@define-color orange #ca6f1e;
+@define-color widget_bg #E6E6E6;
+@define-color widget_hover #C8C8C8;
+@define-color text_primary #1A1A1A;
+@define-color text_secundary #555555;

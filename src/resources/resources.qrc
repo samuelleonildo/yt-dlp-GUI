@@ -1,0 +1,15 @@
+<RCC>
+    <qresource prefix="/">
+        <file>qss/style.qss</file>
+        <file>qss/dark_var.qss</file>
+        <file>qss/light_var.qss</file>
+        <file>fonts/Inter_Light.ttf</file>
+        <file>icons/taskbar_icon.png</file>
+        <file>icons/down_arrow_dark.png</file>
+        <file>icons/down_arrow_light.png</file>
+        <file>icons/moon_light.png</file>
+        <file>icons/moon_dark.png</file>
+        <file>icons/sun_light.png</file>
+        <file>icons/sun_dark.png</file>
+    </qresource>
+</RCC>

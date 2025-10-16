@@ -1,0 +1,162 @@
+#MainWindow {
+    background-color: @bg_window;
+}
+
+#Wrapper {
+    padding: 20px;
+}
+
+#Label {
+    font-size: 16px;
+    color: @text_primary;
+}
+
+
+QLineEdit {
+    background-color: @widget_bg;
+    color: @text_primary;
+    font-size: 14px;
+
+    height: 35px;
+    border: none;
+    border-radius: 10px;
+    padding-left: 13px;
+}
+QLineEdit::placeholder {
+    font-size: 14px;
+    color: @text_secundary;
+}
+
+#ColorModeButton {
+    background-color: @widget_bg;
+    color: @text_secundary;
+    border: none;
+    border-radius: 10px;
+}
+#ColorModeButton:hover, #ColorModeButton:checked {
+    background-color: @widget_hover;
+}
+
+
+QComboBox {
+    background-color: @widget_bg;
+    color: @text_primary;
+    font-size: 14px;
+
+    padding-left: 13px;
+    padding-right: 30px;
+
+    border: none;
+    border-radius: 10px;
+}
+QComboBox:hover {
+    background-color: @widget_hover;
+}
+QComboBox::drop-down {
+    subcontrol-origin: padding;
+    subcontrol-position: top right;
+
+    padding-right: 30px;
+    background-color: transparent;
+    border-radius: 10px;
+}
+QComboBox::down-arrow {
+    image: url(@icon_down_arrow);
+    width: 18px;
+    height: 18px;
+}
+QComboBox QAbstractItemView {
+    background-color: @widget_bg;
+    font-size: 14px;
+
+    border: none;
+    outline: 0;
+}
+QComboBox QAbstractItemView::item {
+    background-color: transparent;
+    color: @text_primary;
+
+    padding-left: 10px;
+    height: 35px;
+}
+QComboBox QAbstractItemView::item:selected, QComboBox QAbstractItemView::item:hover {
+    background-color: @widget_hover;
+    color: @text_primary;
+}
+
+
+#QualityButton {
+    background-color: transparent;
+    border: 1px solid @widget_bg;
+    color: @text_secundary;
+    font-size: 16px;
+    border-radius: 10px;
+}
+#QualityButton:hover {
+    border: 1px solid @blue;
+    color: @blue;
+}
+#QualityButton:checked {
+    background-color: @blue;
+    border: 1px solid @blue;
+    color: @bg_window;
+}
+
+#ChooseButton {
+    background-color: @widget_bg;
+    color: @text_secundary;
+    font-size: 14px;
+    border: none;
+    border-radius: 10px;
+    width: 90px;
+    height: 35px;
+}
+#ChooseButton:hover {
+    background-color: @widget_hover;
+}
+
+
+#HelpButton {
+    background-color: @bg_window;
+    color: @text_secundary;
+    font-size: 14px;
+    border: 1px solid @widget_bg;
+    border-radius: 10px;
+}
+#HelpButton:hover {
+    border: 1px solid @orange;
+    color: @orange;
+}
+#CancelButton {
+    background-color: @bg_window;
+    color: @red;
+    font-size: 14px;
+    border: 1px solid @red;
+    border-radius: 10px;
+}
+#CancelButton:hover {
+    background-color: @red;
+    color: @bg_window;
+}
+#DownloadButton {
+    background-color: @bg_window;
+    color: @green;
+    font-size: 14px;
+    border: 1px solid @green;
+    border-radius: 10px;
+}
+#DownloadButton:hover {
+    background-color: @green;
+    color: @bg_window;
+}
+
+
+QTextEdit {
+    background-color: @widget_bg;
+    color: @text_primary;
+    font-size: 14px;
+
+    border: none;
+    border-radius: 10px;
+    padding: 13px;
+}
