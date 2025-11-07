@@ -23,22 +23,18 @@ private:
     // widgets
     QPushButton* dark_mode;
     QPushButton* light_mode;
-    QComboBox *cbFormat;
-    QComboBox *cbMode;
 
-    QButtonGroup *formatGroup;
-    QRadioButton *rbOpus;
-    QRadioButton *rbMp3;
-    QRadioButton *rbMkv;
-    QRadioButton *rbMp4;
+    QComboBox* cbCookies;
+    QComboBox* cbFormat;
+    QComboBox* cbMode;
 
-    QButtonGroup *videoQualityGroup;
-    QButtonGroup *audioQualityGroup;
+    QButtonGroup* videoQualityGroup;
+    QButtonGroup* audioQualityGroup;
 
-    QLineEdit *leUrl;
-    QLineEdit *lePath;
-    QLineEdit *leCustom;
-    QTextEdit *log;
+    QLineEdit* leUrl;
+    QLineEdit* lePath;
+    QLineEdit* leCustom;
+    QTextEdit* log;
 
     QProcess proc;
     bool btnIsRunning = false;

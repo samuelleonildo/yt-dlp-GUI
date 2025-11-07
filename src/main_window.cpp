@@ -89,9 +89,29 @@ MainWindow::MainWindow(QWidget *parent)
     leUrl->setFixedWidth(750);
     leUrl->setAlignment(Qt::AlignLeft);
 
+    QVBoxLayout* url_layout = new QVBoxLayout;
+    url_layout->addWidget(lblUrl);
+    url_layout->addWidget(leUrl);
+    url_layout->setSpacing(10);
+    url_layout->setAlignment(Qt::AlignLeft);
+
+    // --- Cookies ---
+    QLabel *lblCookies = new QLabel("Cookies");
+    lblCookies->setObjectName("Label");
+    cbCookies = new QComboBox;
+    cbCookies->addItems({"---", "brave", "chrome", "chromium", "edge", "firefox", "floorp", "opera", "opera-gx"}); 
+    cbCookies->setFixedSize(250, 35);
+    cbCookies->setView(new QListView);
+
+    QVBoxLayout* cookies_layout = new QVBoxLayout;
+    cookies_layout->addWidget(lblCookies);
+    cookies_layout->addWidget(cbCookies);
+    cookies_layout->setSpacing(10);
+    cookies_layout->setAlignment(Qt::AlignLeft);
+
     // --- dark/light mode ---
     QHBoxLayout *colors_mode_layout = new QHBoxLayout;
-    colors_mode_layout->setAlignment(Qt::AlignRight);
+    colors_mode_layout->setAlignment(Qt::AlignBottom);
     colors_mode_layout->setSpacing(10);
     QButtonGroup *colors_group = new QButtonGroup(this);
     colors_group->setExclusive(true);
@@ -128,15 +148,11 @@ MainWindow::MainWindow(QWidget *parent)
     });
 
     QHBoxLayout* leUrl_and_color_mode = new QHBoxLayout;
-    leUrl_and_color_mode->addWidget(leUrl);
+    leUrl_and_color_mode->addLayout(url_layout);
+    leUrl_and_color_mode->addStretch();
+    leUrl_and_color_mode->addLayout(cookies_layout);
     leUrl_and_color_mode->addStretch();
     leUrl_and_color_mode->addLayout(colors_mode_layout);
-
-    QVBoxLayout* url_layout = new QVBoxLayout;
-    url_layout->addWidget(lblUrl);
-    url_layout->addLayout(leUrl_and_color_mode);
-    url_layout->setSpacing(10);
-    url_layout->setAlignment(Qt::AlignLeft);
 
 
     // --- mode and format selector ---
@@ -290,7 +306,7 @@ MainWindow::MainWindow(QWidget *parent)
     // --- main layout ---
     QVBoxLayout *mainLayout = new QVBoxLayout;
     mainLayout->setObjectName("MainLayout");
-    mainLayout->addLayout(url_layout);
+    mainLayout->addLayout(leUrl_and_color_mode);
     mainLayout->addLayout(download_and_custom_name_layout);
 
     QWidget *videoQualityWidget = new QWidget;
@@ -397,6 +413,7 @@ void MainWindow::cancelDownload()
 void MainWindow::startDownload()
 {
     // getting widgets
+    QString cookies = cbCookies ? cbCookies->currentText() : "---";
     QString mode = cbMode ? cbMode->currentText() : "video";
     QString format = cbFormat ? cbFormat->currentText() : "mp4";
 
@@ -472,8 +489,18 @@ void MainWindow::startDownload()
     QStringList args;
     args << "--ffmpeg-location" << ffmpegPath;
 
-    QString videoQuality = videoQualityGroup->checkedButton()->text();
-    QString audioQuality = audioQualityGroup->checkedButton()->text();
+    QString videoQuality = (videoQualityGroup && videoQualityGroup->checkedButton())
+        ? videoQualityGroup->checkedButton()->text() : "Best";
+
+    QString audioQuality = (audioQualityGroup && audioQualityGroup->checkedButton())
+        ? audioQualityGroup->checkedButton()->text() : "Best";
+
+
+    // --- adding cookies ---
+    if (cookies != "---")
+    {
+        args << "--cookies-from-browser" << cookies;
+    }
 
     // --- audio mode ---
     if (mode == "audio")
