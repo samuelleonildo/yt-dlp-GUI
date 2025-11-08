@@ -42,7 +42,7 @@ The .zip or .tar.gz file contains everything you need — just extract and run *
     ```
     > This script creates the `release/` directory and copies the executable into it
     <br>
-    > _Note: The application was programmed to use the yt-dlp and ffmpeg that are in the `release/deps/` directory_
+    > Note: the application was programmed to use the yt-dlp and ffmpeg that are in the `release/deps/` directory
 
 3. Run `copy_deps.sh` to handle required library dependencies on some platforms:
     ```sh
@@ -50,7 +50,7 @@ The .zip or .tar.gz file contains everything you need — just extract and run *
     ```
     > This will copy all Qt dependencies to the `release/` directory
     <br>
-    > _Note: this script handles Scoop-installed deps on Windows_
+    > Note: this script handles Scoop-installed deps on Windows
 
 4. The executable will be located in the `release/` directory — run it directly
     ```bash
