@@ -2,6 +2,11 @@
 
 A lightweight, open-source C++ **graphical interface** for [yt-dlp](https://github.com/yt-dlp/yt-dlp) — making it easier to download and manage online videos without using command line.
 
+<p align="center">
+  <img src="docs/screenshot-dark.png" alt="yt-dlp-GUI dark mode" width="49%">
+  <img src="docs/screenshot-light.png" alt="yt-dlp-GUI light mode" width="49%">
+</p>
+
 ## Features
 
 - Clean and simple interface for [yt-dlp](https://github.com/yt-dlp/yt-dlp)
