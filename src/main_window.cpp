@@ -506,6 +506,9 @@ void MainWindow::startDownload()
     if (mode == "audio")
     {
         args << "-x";
+
+        args << "--embed-thumbnail";
+
         args << "--audio-format" << format;
 
         if (audioQuality != "Best")
