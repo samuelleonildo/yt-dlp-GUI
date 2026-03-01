@@ -55,6 +55,9 @@ private:
     void readStderr();
     void processFinished(int exitCode, QProcess::ExitStatus status);
 
+    bool ensureYtDlp();
+    bool ensureFfmpeg();
+
     static void sanitizeFilename(QString &s);
     static bool isPlaylistUrl(const QString &url);
 };

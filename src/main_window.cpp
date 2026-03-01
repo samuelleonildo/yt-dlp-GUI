@@ -35,17 +35,83 @@ void MainWindow::sanitizeFilename(QString &s)
 
 bool MainWindow::isPlaylistUrl(const QString &url)
 {
-    return url.contains("list=") || url.contains("playlist?");
+    static const QRegularExpression re(R"(([\?&])list=)");
+    return re.match(url).hasMatch();
+}
+
+bool MainWindow::ensureYtDlp()
+{
+    // checks existence
+    QFileInfo fi(ytDlpPath);
+    if (!fi.exists() || !fi.isExecutable())
+    {
+        QMessageBox::critical(this, "Error", "yt-dlp not found or not executable on releases/deps.");
+        return false;
+    }
+
+    QProcess checkProc;
+
+    // tests the version
+    checkProc.start(ytDlpPath, {"--version"});
+    if (!checkProc.waitForFinished(5000) || checkProc.exitCode() != 0)
+    {
+        // tries to update
+        QProcess updater;
+        updater.start(ytDlpPath, {"-U"});
+        if (!updater.waitForStarted(5000))
+        {
+            QMessageBox::critical(this, "Error", "yt-dlp failed to update.");
+            return false;
+        }
+        updater.waitForFinished(30000); // it may take a while
+
+        // tests again
+        QProcess checkProc2;
+        checkProc2.start(ytDlpPath, {"--version"});
+        if (!checkProc2.waitForFinished(5000) || checkProc2.exitCode() != 0)
+        {
+            QMessageBox::critical(this, "Error", "yt-dlp failed to update.");
+            return false;
+        }
+    }
+
+    return true;
+}
+
+bool MainWindow::ensureFfmpeg()
+{
+    // checks existence
+    QFileInfo fi(ffmpegPath);
+    if (!fi.exists() || !fi.isExecutable())
+    {
+        QMessageBox::critical(this, "Error", "ffmpeg not found or not executable on releases/deps.");
+        return false;
+    }
+
+    QProcess checkProc;
+
+    // tests the version
+    checkProc.start(ffmpegPath, {"-version"});
+    if (!checkProc.waitForFinished(5000) || checkProc.exitCode() != 0)
+    {
+        QMessageBox::critical(this, "Error", "error running ffmpeg.");
+        return false;
+    }
+
+    return true;
 }
 
 void MainWindow::applyInterFont(void)
 {
     // loads font
     int fontId = QFontDatabase::addApplicationFont(":/fonts/Inter_Light.ttf");
-    QString family = QFontDatabase::applicationFontFamilies(fontId).at(0);
+    if (fontId == -1) { return; }
+
+    QStringList families = QFontDatabase::applicationFontFamilies(fontId);
+    if (families.isEmpty()) { return; }
 
     // defines it for the entire application
-    QFont interLight(family, 16);
+    QFont interLight(families.first(), 16);
     this->setFont(interLight);
 }
 
@@ -182,7 +248,7 @@ MainWindow::MainWindow(QWidget *parent)
     QLabel *lblCustom = new QLabel("Custom name (optional):");
     lblCustom->setObjectName("Label");
     leCustom = new QLineEdit;
-    leCustom->setPlaceholderText("no especial characters nor extension");
+    leCustom->setPlaceholderText("no special characters nor extension");
     leCustom->setFixedSize(445, 35);
 
     QVBoxLayout *customNameLayout = new QVBoxLayout;
@@ -396,7 +462,7 @@ void MainWindow::cancelDownload()
 
     proc.terminate();
 
-    if (!proc.waitForFinished(3000))
+    if (!proc.waitForFinished(5000))
     {
         log->append("Forcing process to stop...");
         proc.kill();
@@ -412,6 +478,13 @@ void MainWindow::cancelDownload()
 
 void MainWindow::startDownload()
 {
+    // double execution block
+    if (btnIsRunning)
+    {
+        QMessageBox::information(this, "Busy", "A download is already running.");
+        return;
+    }
+
     // getting widgets
     QString cookies = cbCookies ? cbCookies->currentText() : "---";
     QString mode = cbMode ? cbMode->currentText() : "video";
@@ -461,20 +534,8 @@ void MainWindow::startDownload()
     // --- check dependencies ---
     log->append("Checking dependencies: yt-dlp and ffmpeg...");
 
-    QProcess check;
-    check.start(ytDlpPath, {"--version"});
-    if (!check.waitForFinished(3000) || check.exitCode() != 0)
-    {
-        QMessageBox::critical(this, "Error", "yt-dlp not found in release/deps.");
-        return;
-    }
-
-    check.start(ffmpegPath, {"-version"});
-    if (!check.waitForFinished(3000) || check.exitCode() != 0)
-    {
-        QMessageBox::critical(this, "Error", "ffmpeg not found in release/deps.");
-        return;
-    }
+    if (!ensureYtDlp()) { return; }
+    if (!ensureFfmpeg()) { return; }
 
     // --- output path ---
     QString outputTemplate;
@@ -520,7 +581,7 @@ void MainWindow::startDownload()
         qualityValue.remove("p"); // ex: "720p" -> "720"
 
         if (videoQuality == "Best" || videoQuality == "4K")
-            qualityValue = "4320"; // max limit
+            qualityValue = "2160"; // 4K = 2160p
 
         QString formatArg = QString("bestvideo[height<=%1]+bestaudio/best").arg(qualityValue);
         args << "-f" << formatArg;
@@ -534,7 +595,7 @@ void MainWindow::startDownload()
     log->append("Running command: " + ytDlpPath + " " + args.join(" "));
 
     proc.start(ytDlpPath, args);
-    if (!proc.waitForStarted(3000))
+    if (!proc.waitForStarted(5000))
     {
         QMessageBox::critical(this, "Error", "Failed to execute yt-dlp.");
         return;
