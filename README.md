@@ -1,6 +1,6 @@
 # yt-dlp-GUI
 
-A lightweight, open-source C++ **graphical interface** for [yt-dlp](https://github.com/yt-dlp/yt-dlp) — making it easier to download and manage online videos without using command line.
+A lightweight, open-source C++ **graphical interface** for [yt-dlp](https://github.com/yt-dlp/yt-dlp) — making it easy to download and manage online videos without using command line.
 
 <p align="center">
   <img src="docs/screenshot-dark.png" alt="yt-dlp-GUI dark mode" width="49%">
@@ -62,7 +62,7 @@ The .zip or .tar.gz file contains everything you need — just extract and run *
 
 ## Notes
 - If you encounter warnings or download issues, try updating yt-dlp
-    > Make sure you're in the `release/` directory
+    > Make sure you're in the `release/deps/` directory
 
     ```bash
     ./yt-dlp -U # Linux
@@ -76,6 +76,29 @@ The .zip or .tar.gz file contains everything you need — just extract and run *
 - `build.sh` — Shell script to automate the project build.
 - `copy_deps.sh` — Script to handle dependency copy during build process.
 
+## Third-Party Softwares
+
+This project redistributes the following third-party software:
+
+### yt-dlp
+
+yt-dlp is released under The Unlicense.
+
+Source: [https://github.com/yt-dlp/yt-dlp](https://github.com/yt-dlp/yt-dlp)
+
+> See THIRD_PARTY_LICENSES/yt-dlp-Unlicense.txt for details.
+
+### FFmpeg
+
+This project redistributes unmodified FFmpeg binaries built by BtbN.
+
+FFmpeg is licensed under the GNU General Public License (GPL).
+
+The exact corresponding source code for the distributed FFmpeg binaries
+is available at: [https://github.com/BtbN/FFmpeg-Builds/releases/tag/autobuild-2026-03-01-12-58](https://github.com/BtbN/FFmpeg-Builds/releases/tag/autobuild-2026-03-01-12-58)
+
+> See THIRD_PARTY_LICENSES/FFmpeg-GPL.txt for the full license text.
+
 ## License
 
 Licensed under [The Unlicense](LICENSE) — free and public domain.
@@ -84,3 +107,6 @@ Licensed under [The Unlicense](LICENSE) — free and public domain.
 samuelleonildo
 <br>
 [github.com/samuelleonildo](https://github.com/samuelleonildo/)
+
+##
+> Note: This project is not affiliated with the FFmpeg or yt-dlp projects.
