@@ -27,10 +27,13 @@ set(SOURCES
 
 
 if(WIN32)
+    set(APP_ICON_RESOURCE "${CMAKE_CURRENT_SOURCE_DIR}/app.rc")
+
     add_executable(yt-dlp-GUI
         src/main_win.cpp
         ${HEADERS}
         ${SOURCES}
+        ${APP_ICON_RESOURCE}
     )
 else()
     add_executable(yt-dlp-GUI
