@@ -1,18 +1,15 @@
-#include <windows.h>
-#include <QFile>
 #include <QApplication>
+#include <QFile>
 #include "main_window.hpp"
 #include "resources/style_loader.hpp"
 
-// mostly used for Windows
-int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
+int main(int argc, char *argv[])
 {
-    int argc = 0;
-    char **argv = nullptr;
-
     QApplication app(argc, argv);
 
-    // // style
+    QCoreApplication::setOrganizationName("yt-dlp-gui");
+    QCoreApplication::setApplicationName("yt-dlp-gui");
+
     app.setStyleSheet(loadStyleSheet(Theme::Dark));
     app.setWindowIcon(QIcon(":/icons/taskbar_icon.png"));
 
