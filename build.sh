@@ -58,3 +58,34 @@ echo "Copying executable to release/"
 mkdir -p "../$RELEASE_DIR"
 cp "$EXECUTABLE" "../$RELEASE_DIR/"
 echo "Copied successfully!"
+
+
+# Copy linux desktop helper (Linux only)
+if [[ "$OS" == "Linux" ]]; then
+    DEST_DIR="../$RELEASE_DIR/resources"
+
+    # copy the .desktop script
+    SRC_SCRIPT="../scripts/linux-desktop.sh"
+
+    if [ -f "$SRC_SCRIPT" ]; then
+        echo "Copying linux-desktop.sh to release/resources..."
+        mkdir -p "$DEST_DIR"
+        cp "$SRC_SCRIPT" "$DEST_DIR/"
+        chmod +x "$DEST_DIR/linux-desktop.sh"
+        echo "linux-desktop.sh copied successfully!"
+    else
+        echo "Warning: $SRC_SCRIPT not found, skipping."
+    fi
+
+    # copy the icon
+    SRC_ICON="../src/resources/icons/taskbar_icon.png"
+
+    if [ -f "$SRC_ICON" ]; then
+        echo "Copying taskbar_icon.png to release/resources..."
+        mkdir -p "$DEST_DIR"
+        cp "$SRC_ICON" "$DEST_DIR/"
+        echo "taskbar_icon.png copied successfully!"
+    else
+        echo "Warning: $SRC_ICON not found, skipping."
+    fi
+fi
