@@ -17,6 +17,9 @@
 #include <QComboBox>
 #include <QListView>
 #include <QFontDatabase>
+#include <QSettings>
+#include <QDateTime>
+#include <QTimer>
 
 
 #ifdef Q_OS_WIN
@@ -39,6 +42,57 @@ bool MainWindow::isPlaylistUrl(const QString &url)
     return re.match(url).hasMatch();
 }
 
+bool MainWindow::shouldUpdateYtDlp()
+{
+    QSettings s;
+
+    qint64 last = s.value("yt_dlp_last_update", 0).toLongLong();
+    qint64 now = QDateTime::currentSecsSinceEpoch();
+
+    const qint64 interval = 24 * 60 * 60; // 24h
+
+    return (now - last > interval);
+}
+
+void MainWindow::updateYtDlpAsync()
+{
+    // checks existence
+    QFileInfo fi(ytDlpPath);
+    if (!fi.exists() || !fi.isExecutable()) { return; }
+
+    QProcess* updater = new QProcess(this);
+
+    connect(updater, &QProcess::readyReadStandardOutput, this, [=] {
+        log->append(QString::fromLocal8Bit(updater->readAllStandardOutput()));
+    });
+
+    connect(updater, &QProcess::readyReadStandardError, this, [=] {
+        log->append(QString::fromLocal8Bit(updater->readAllStandardError()));
+    });
+
+    connect(updater,
+        QOverload<int, QProcess::ExitStatus>::of(&QProcess::finished),
+        this,
+        [=](int code, QProcess::ExitStatus) {
+            if (code == 0)
+            {
+                log->append("yt-dlp update check finished");
+
+                QSettings s;
+                s.setValue("yt_dlp_last_update", QDateTime::currentSecsSinceEpoch());
+            }
+            else
+            {
+                log->append("yt-dlp update failed");
+            }
+
+            updater->deleteLater();
+        });
+
+    log->append("Checking for yt-dlp updates...");
+    updater->start(ytDlpPath, {"-U"});
+}
+
 bool MainWindow::ensureYtDlp()
 {
     // checks existence
@@ -47,32 +101,6 @@ bool MainWindow::ensureYtDlp()
     {
         QMessageBox::critical(this, "Error", "yt-dlp not found or not executable on releases/deps.");
         return false;
-    }
-
-    QProcess checkProc;
-
-    // tests the version
-    checkProc.start(ytDlpPath, {"--version"});
-    if (!checkProc.waitForFinished(5000) || checkProc.exitCode() != 0)
-    {
-        // tries to update
-        QProcess updater;
-        updater.start(ytDlpPath, {"-U"});
-        if (!updater.waitForStarted(5000))
-        {
-            QMessageBox::critical(this, "Error", "yt-dlp failed to update.");
-            return false;
-        }
-        updater.waitForFinished(30000); // it may take a while
-
-        // tests again
-        QProcess checkProc2;
-        checkProc2.start(ytDlpPath, {"--version"});
-        if (!checkProc2.waitForFinished(5000) || checkProc2.exitCode() != 0)
-        {
-            QMessageBox::critical(this, "Error", "yt-dlp failed to update.");
-            return false;
-        }
     }
 
     return true;
@@ -85,16 +113,6 @@ bool MainWindow::ensureFfmpeg()
     if (!fi.exists() || !fi.isExecutable())
     {
         QMessageBox::critical(this, "Error", "ffmpeg not found or not executable on releases/deps.");
-        return false;
-    }
-
-    QProcess checkProc;
-
-    // tests the version
-    checkProc.start(ffmpegPath, {"-version"});
-    if (!checkProc.waitForFinished(5000) || checkProc.exitCode() != 0)
-    {
-        QMessageBox::critical(this, "Error", "error running ffmpeg.");
         return false;
     }
 
@@ -434,6 +452,9 @@ MainWindow::MainWindow(QWidget *parent)
     ytDlpPath = QDir(depsPath).filePath("yt-dlp");
     ffmpegPath = QDir(depsPath).filePath("ffmpeg");
 #endif
+
+    if (shouldUpdateYtDlp())
+        QTimer::singleShot(0, this, &MainWindow::updateYtDlpAsync);
 }
 
 

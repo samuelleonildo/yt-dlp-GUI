@@ -54,7 +54,9 @@ private:
     void readStdout();
     void readStderr();
     void processFinished(int exitCode, QProcess::ExitStatus status);
+    void updateYtDlpAsync();
 
+    bool shouldUpdateYtDlp();
     bool ensureYtDlp();
     bool ensureFfmpeg();
 
