@@ -22,7 +22,23 @@ Download the latest prebuilt version from the [Releases page](https://github.com
 <br>
 The .zip or .tar.gz file contains everything you need — just extract and run **yt-dlp-GUI**.
 
-### Option 2 — Build from source:
+### Option 2 — Nix
+If you use [Nix](https://nixos.org) this repo includes a `flake.nix` for a reproducible build - no manual Qt path setup, no `copy_deps.sh` needed.
+
+```bash
+nix run github:samuelleonildo/yt-dlp-GUI
+```
+Or build locally:
+```bash
+git clone https://github.com/samuelleonildo/yt-dlp-GUI.git
+cd yt-dlp-GUI
+nix build .
+./result/bin/yt-dlp-gui
+```
+
+See [README.Nix.md](README.Nix.md) for NixOS/HomeManager integration.
+
+### Option 3 — Build from source:
 ### Prerequisites
 
 - Linux or Windows
