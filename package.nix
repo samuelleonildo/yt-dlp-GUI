@@ -1,5 +1,17 @@
-{ lib, stdenv, fetchFromGitHub, cmake, qt6, yt-dlp, ffmpeg }:
+{ lib, stdenv, fetchFromGitHub, cmake, qt6, yt-dlp, ffmpeg, makeDesktopItem, copyDesktopItems }:
 
+# replicate ./scripts/linux-desktop.sh for nix
+let
+  desktopItem = makeDesktopItem {
+    name = "yt-dlp-gui";
+    desktopName = "yt-dlp-GUI";
+    comment = "Gui for yt-dlp";
+    exec = "yt-dlp-gui";
+    icon = "yt-dlp-gui";
+    categories = [ "Utility" ];
+    startupWMClass = "yt-dlp-GUI";
+  };
+in
 stdenv.mkDerivation (finalAttrs: {
   pname = "yt-dlp-gui";
   version = "2026-03-02";
@@ -14,11 +26,14 @@ stdenv.mkDerivation (finalAttrs: {
   nativeBuildInputs = [
     cmake
     qt6.wrapQtAppsHook
+    copyDesktopItems
   ];
 
   buildInputs = [
     qt6.qtbase
   ];
+
+  desktopItems = [ desktopItem ];
 
   installPhase = ''
     runHook preInstall
@@ -28,6 +43,9 @@ stdenv.mkDerivation (finalAttrs: {
     mkdir -p $out/bin/deps
     ln -s ${lib.getExe yt-dlp} $out/bin/deps/yt-dlp
     ln -s ${lib.getExe' ffmpeg "ffmpeg"} $out/bin/deps/ffmpeg
+
+    install -Dm644 ../src/resources/icons/taskbar_icon.png \
+    $out/share/icons/hicolor/256x256/apps/yt-dlp-gui.png
 
     runHook postInstall
   '';
