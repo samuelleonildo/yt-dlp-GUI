@@ -10,13 +10,6 @@ nix run github:samuelleonildo/yt-dlp-GUI
 nix profile install github:samuelleonildo/yt-dlp-GUI
 ```
 
-Or from a local clone:
-
-```bash
-nix build .
-./result/bin/yt-dlp-gui
-```
-
 ## NixOS / Home Manager
 
 ```nix
